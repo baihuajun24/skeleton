@@ -41,4 +41,6 @@ public class CreateReceiptRequestTest {
         validator.validate(receipt);
         assertThat(validator.validate(receipt), hasSize(1));
     }
+
+    //TODO: create my Test with @Test
 }
