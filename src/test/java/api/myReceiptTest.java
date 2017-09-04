@@ -19,7 +19,7 @@ public class myReceiptTest {
     public void testBothMissing() {
         CreateReceiptRequest receipt = new CreateReceiptRequest();
 
-        receipt.merchant = "Huajun";
-        assertThat(validator.validate(receipt), empty());
+        //receipt.merchant = "Huajun";
+        assertThat(validator.validate(receipt), hasSize(1));
     }
 }
