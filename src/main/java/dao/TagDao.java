@@ -21,27 +21,32 @@ public class TagDao {
         this.dsl = DSL.using(jooqConfig);
     }
 
+    // for untag
+    public boolean ifExists(String tagName, int receiptID){
+        TagsRecord tagsRecord = dsl.selectFrom(TAGS).where(TAGS.RECEIPT_ID.eq(receiptId))
+                .and(TAGS.NAME.eq(tagName)).fetchOne();
+        return tagsRecord != null;
+    }
+
+    // no need to write as a seperate funct
+    public void remove(String tagName, int receiptID){
+        dsl.deleteFrom(TAGS).where(TAGS.LABEL.eq(tagName))
+                .and(TAGS.RECEIPT_ID.eq(receiptId)).execute();
+    }
+
     public int insert(String tagName, int receiptID){
-        TagsRecord tagsRecord = dsl
-                    .insertInto()
+        TagsRecord tagsRecord = dsl.insertInto(TAGS, TAGS.RECEIPT_ID, TAGS.NAME)
+                                .values(tagName, receiptID)
+                                .returning(TAGS.ID)
+                                .fetchOne();
+        checkState(tagsRecord != null && tagsRecord.getId() != null, "Tag insert failed");
+        return tagsRecord.getId();
     }
+
+    public List<ReceiptsRecord> findRptwithTag(String tagName){
+        List<Integer> RptIDs = dsl.selectFrom(TAGS).where(TAGS.TAG.eq(tagName)).fetch().map(x -> x.getReceiptId());
+        return dsl.selectFrom(RECEIPTS).where(RECEIPTS.ID.in(RptIDs)).fetch();    
+    }
+
     
-}
-
-
-    public int insert(String merchantName, BigDecimal amount) {
-        ReceiptsRecord receiptsRecord = dsl
-                .insertInto(RECEIPTS, RECEIPTS.MERCHANT, RECEIPTS.AMOUNT)
-                .values(merchantName, amount)
-                .returning(RECEIPTS.ID)
-                .fetchOne();
-
-        checkState(receiptsRecord != null && receiptsRecord.getId() != null, "Insert failed");
-
-        return receiptsRecord.getId();
-    }
-
-    public List<ReceiptsRecord> getAllReceipts() {
-        return dsl.selectFrom(RECEIPTS).fetch();
-    }
 }
