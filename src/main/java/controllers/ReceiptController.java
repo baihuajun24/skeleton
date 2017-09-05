@@ -25,12 +25,14 @@ public class ReceiptController {
 
     @POST
     public int createReceipt(@Valid @NotNull CreateReceiptRequest receipt) {
+        System.out.println("Receipt POST success!");
         return receipts.insert(receipt.merchant, receipt.amount);
     }
 
     @GET
     public List<ReceiptResponse> getReceipts() {
         List<ReceiptsRecord> receiptRecords = receipts.getAllReceipts();
+        System.out.println("Receipt GET success!");
         return receiptRecords.stream().map(ReceiptResponse::new).collect(toList());
     }
 }
