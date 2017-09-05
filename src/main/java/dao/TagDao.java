@@ -7,7 +7,6 @@ import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 import static com.google.common.base.Preconditions.checkState;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,32 +20,29 @@ public class TagDao {
         this.dsl = DSL.using(jooqConfig);
     }
 
-    // for untag
-    public boolean ifExists(String tagName, int receiptID){
-        TagsRecord tagsRecord = dsl.selectFrom(TAGS).where(TAGS.RECEIPT_ID.eq(receiptID))
-                .and(TAGS.NAME.eq(tagName)).fetchOne();
-        return tagsRecord != null;
+    public boolean isReceiptTagged(String tagLabel, int receiptId) {
+        TagsRecord record = dsl.selectFrom(TAGS).where(TAGS.RECEIPT_ID.eq(receiptId))
+                .and(TAGS.LABEL.eq(tagLabel)).fetchOne();
+        return record != null;
     }
 
-    // no need to write as a seperate funct
-    public void remove(String tagName, int receiptID){
-        dsl.deleteFrom(TAGS).where(TAGS.NAME.eq(tagName))
-                .and(TAGS.RECEIPT_ID.eq(receiptID)).execute();
-    }
-
-    public int insert(String tagName, int receiptID){
-        TagsRecord tagsRecord = dsl.insertInto(TAGS, TAGS.RECEIPT_ID, TAGS.NAME)
-                                .values(tagName, receiptID)
-                                .returning(TAGS.ID)
-                                .fetchOne();
-        checkState(tagsRecord != null && tagsRecord.getId() != null, "Tag insert failed");
+    public int insert(String tagLabel, int receiptId) {
+        TagsRecord tagsRecord = dsl.insertInto(TAGS, TAGS.LABEL, TAGS.RECEIPT_ID)
+                .values(tagLabel, receiptId)
+                .returning(TAGS.ID, TAGS.RECEIPT_ID, TAGS.LABEL)
+                .fetchOne();
+        checkState(tagsRecord != null && tagsRecord.getId() != null, "Insert failed");
         return tagsRecord.getId();
     }
 
-    public List<ReceiptsRecord> findRptwithTag(String tagName){
-        List<Integer> RptIDs = dsl.selectFrom(TAGS).where(TAGS.NAME.eq(tagName)).fetch().map(x -> x.getReceiptId());
-        return dsl.selectFrom(RECEIPTS).where(RECEIPTS.ID.in(RptIDs)).fetch();    
+    public void remove(String tagLabel, int receiptId) {
+        dsl.deleteFrom(TAGS).where(TAGS.LABEL.eq(tagLabel))
+                .and(TAGS.RECEIPT_ID.eq(receiptId)).execute();
     }
 
-    
+    public List<ReceiptsRecord> receiptsRecordsWithTag(String tagLabel) {
+        List<Integer> receiptIds = dsl.selectFrom(TAGS).where(TAGS.LABEL.eq(tagLabel)).fetch()
+                .stream().map(x -> x.getReceiptId()).collect(Collectors.toList());
+        return dsl.selectFrom(RECEIPTS).where(RECEIPTS.ID.in(receiptIds)).fetch();
+    }
 }

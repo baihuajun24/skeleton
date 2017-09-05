@@ -8,6 +8,7 @@ import generated.Keys;
 import generated.Public;
 import generated.tables.records.TagsRecord;
 
+import java.sql.Time;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,7 +35,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tags extends TableImpl<TagsRecord> {
 
-	private static final long serialVersionUID = 600236480;
+	private static final long serialVersionUID = -1698868176;
 
 	/**
 	 * The reference instance of <code>public.tags</code>
@@ -55,14 +56,19 @@ public class Tags extends TableImpl<TagsRecord> {
 	public final TableField<TagsRecord, Integer> ID = createField("id", org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>public.tags.recepit_id</code>.
+	 * The column <code>public.tags.label</code>.
 	 */
-	public final TableField<TagsRecord, Integer> RECEPIT_ID = createField("recepit_id", org.jooq.impl.SQLDataType.INTEGER, this, "");
+	public final TableField<TagsRecord, String> LABEL = createField("label", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>public.tags.name</code>.
+	 * The column <code>public.tags.receipt_id</code>.
 	 */
-	public final TableField<TagsRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final TableField<TagsRecord, Integer> RECEIPT_ID = createField("receipt_id", org.jooq.impl.SQLDataType.INTEGER, this, "");
+
+	/**
+	 * The column <code>public.tags.uploaded</code>.
+	 */
+	public final TableField<TagsRecord, Time> UPLOADED = createField("uploaded", org.jooq.impl.SQLDataType.TIME.defaulted(true), this, "");
 
 	/**
 	 * Create a <code>public.tags</code> table reference
