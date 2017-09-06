@@ -29,20 +29,18 @@ public class TagDao {
     public int insert(String tagLabel, int receiptId) {
         TagsRecord tagsRecord = dsl.insertInto(TAGS, TAGS.LABEL, TAGS.RECEIPT_ID)
                 .values(tagLabel, receiptId)
-                .returning(TAGS.ID, TAGS.RECEIPT_ID, TAGS.LABEL)
+                .returning(TAGS.ID)
                 .fetchOne();
         checkState(tagsRecord != null && tagsRecord.getId() != null, "Insert failed");
         return tagsRecord.getId();
     }
 
     public void remove(String tagLabel, int receiptId) {
-        dsl.deleteFrom(TAGS).where(TAGS.LABEL.eq(tagLabel))
-                .and(TAGS.RECEIPT_ID.eq(receiptId)).execute();
+        dsl.deleteFrom(TAGS).where(TAGS.RECEIPT_ID.eq(receiptId)).and(TAGS.LABEL.eq(tagLabel)).execute();
     }
 
     public List<ReceiptsRecord> receiptsRecordsWithTag(String tagLabel) {
-        List<Integer> receiptIds = dsl.selectFrom(TAGS).where(TAGS.LABEL.eq(tagLabel)).fetch()
-                .stream().map(x -> x.getReceiptId()).collect(Collectors.toList());
+        List<Integer> receiptIds = dsl.selectFrom(TAGS).where(TAGS.LABEL.eq(tagLabel)).fetch().stream().map(x -> x.getReceiptId()).collect(Collectors.toList());
         return dsl.selectFrom(RECEIPTS).where(RECEIPTS.ID.in(receiptIds)).fetch();
     }
 }
