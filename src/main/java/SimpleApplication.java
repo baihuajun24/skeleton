@@ -1,6 +1,5 @@
 import controllers.ReceiptController;
 import controllers.TagController;
-import controllers.HelloWorldController;
 import controllers.NetIDController;
 import controllers.StaticHtmlController;
 import dao.ReceiptDao;
