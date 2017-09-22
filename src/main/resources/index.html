@@ -40,68 +40,53 @@
         $.ajax({
             type: "POST",
             data :JSON.stringify(receipt),
-            url: "/receipts",
+            url: api+"/receipts",
             contentType: "application/json"
         }).done(function (data) {
-            $.getJSON("/receipts", function(receipts){
+            $.getJSON(api+"/receipts", function(receipts){
                 $(createContent(receipts[receipts.length-1])).appendTo($("#receiptList"));
             })
         });
     }
-    function addtag(btn) {
-        var temp = '<input type="text" class="tag_input" placeholder="tag name"></div>';
-        switch($(btn).siblings().is("input")) {
-            case true:
-                $(btn).siblings()[0].remove();
-                break;
-            case false:
-                $(btn).after(temp);
-                break;
-        }
-    }
-
-    function removeTag(ele) {
-        var receiptID = $(ele).parent().parent()[0].id;
-        $.ajax({
-            type: "PUT",
-            data :JSON.stringify(receiptID),
-            url: "/tags/"+$(ele).text(),
-            contentType: "application/json"
-        }).done(function (data) {
-            $(ele).remove();
-        });
-
-    }
-
-    $(document).on("keydown", ".tag_input", function(event) {
-        if(event.keyCode == 13) {
-            var receiptID = $(this).parent().parent()[0].id;
-            var temp = '<button class="tagValue" onclick="removeTag(this)">'+ this.value +'</button>';
-            $(this).before(temp);
-
-            $.ajax({
-                type: "PUT",
-                data :JSON.stringify(receiptID),
-                url: testapi+"/tags/"+tagName,
-                contentType: "application/json"
-            }).done(function (data) {
-                $(event.target).val('');
-                $(event.target).remove();
-            });
-
-        };
-
-    })
 
     $("#add-receipt").click(function(){
+        //$("myDropdown").toggle();
     });
     $ ("#cancel-receipt").click(function(){
+        $ ("#merchant").val('');
+        $ ("#amount").val('');
+        //$("myDropdown").hide();
     });
     $('#save-receipt').click(function(){
         addReceipt($("#merchant").val(), $("#amount").val());
         $ ("#merchant").val('');
         $ ("#amount").val('');
     });
+
+    function addtag(here){
+            var receipt = $(here).parent().parent();
+            if (!(receipt.children("input").length)) {
+                receipt.append("<input type='text' class = 'tag_input' />");
+            }else{
+                receipt.children("input").remove();
+            }
+    }
+
+    function removetag(here){
+            // ajax stuff
+            $(here).remove();
+    }
+
+    $(document).on("keypress", ".tag_input", function(key){
+            if(key.which == 13) {
+                // need ajax stuff
+                var receiptId = parseInt($(this).parent().attr("id"));
+                var tag = $(this).val().trim();
+                var tmp = "<div class='tag tagValue' onclick= 'removetag(this)'>" + tag + "</div>";
+                $("#" + receiptId).children(".tags").append(tmp);
+            }
+        });
+
     </script>
 
 
