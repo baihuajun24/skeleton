@@ -5,6 +5,7 @@
         <title>hb364A3</title>
     </head>
     <body>
+        <h1> F-word CSS</h1>
         <div id="container" style="width:40%; margin: auto">
         <div class='title'>My receipts</div>
         <div id="add-receipt">add</div>
@@ -23,6 +24,7 @@
         </div>
     </body>
     <script>
+    const api = ""
     function createContent(receipt) {
         var template = '<div class="receipt" id="'+receipt.id+'">';
         template += '<div class = "created">'+receipt.created+'</div>';
@@ -42,12 +44,54 @@
             contentType: "application/json"
         }).done(function (data) {
             $.getJSON("/receipts", function(receipts){
-                var receipt = receipts[receipts.length-1];
-                var template = createContent(receipt);
-                $(template).appendTo($("#receiptList"));
+                $(createContent(receipts[receipts.length-1])).appendTo($("#receiptList"));
             })
         });
     }
+    function addtag(btn) {
+        var temp = '<input type="text" class="tag_input" placeholder="tag name"></div>';
+        switch($(btn).siblings().is("input")) {
+            case true:
+                $(btn).siblings()[0].remove();
+                break;
+            case false:
+                $(btn).after(temp);
+                break;
+        }
+    }
+
+    function removeTag(ele) {
+        var receiptID = $(ele).parent().parent()[0].id;
+        $.ajax({
+            type: "PUT",
+            data :JSON.stringify(receiptID),
+            url: "/tags/"+$(ele).text(),
+            contentType: "application/json"
+        }).done(function (data) {
+            $(ele).remove();
+        });
+
+    }
+
+    $(document).on("keydown", ".tag_input", function(event) {
+        if(event.keyCode == 13) {
+            var receiptID = $(this).parent().parent()[0].id;
+            var temp = '<button class="tagValue" onclick="removeTag(this)">'+ this.value +'</button>';
+            $(this).before(temp);
+
+            $.ajax({
+                type: "PUT",
+                data :JSON.stringify(receiptID),
+                url: testapi+"/tags/"+tagName,
+                contentType: "application/json"
+            }).done(function (data) {
+                $(event.target).val('');
+                $(event.target).remove();
+            });
+
+        };
+
+    })
 
     $("#add-receipt").click(function(){
     });
