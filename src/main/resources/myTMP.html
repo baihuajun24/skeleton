@@ -1,0 +1,107 @@
+<html>
+
+    <head>
+        <script data-require="jquery@*" data-semver="3.1.1" type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+        <title>hb364A3</title>
+        <script>
+            const api = "";
+            // Goal 1: pass auto-grader
+            // Goal 2: don't copy code!
+
+            // append receipt to receiptList
+            function appendReceipt(receipt) {
+                var html = "<div class='receipt' id='" + receipt.id + "'>";
+                html += "<span class='date'>" + receipt.created + "</span>";
+                html += "<span class='merchant'>" + receipt.merchantName + "</span>";
+                html += "<span class='amount'>" + receipt.value + "</span>";
+                html += "<span class='tags'><span class='add-tag'>Add +</span></span></div>";
+                $(html).appendTo($("#receiptList"));
+            }
+
+            function toContent(receipt) {
+                var html = "<div class='receipt' id='" + receipt.id + "'>";
+                html += "<span class='date'>" + receipt.created + "</span>";
+                html += "<span class='merchant'>" + receipt.merchantName + "</span>";
+                html += "<span class='amount'>" + receipt.value + "</span>";
+                html += "<span class='tags'><span class='add-tag' onclick='addtag(this)'>Add +</span></span></div>";
+                return html;
+            }
+
+    function createContent(receipt) {
+        var time = receipt.created;
+        var merchant = receipt.merchantName;
+        var amount = receipt.value;
+        var id = receipt.id;
+
+        var template = '<div class="receipt" id="'+id+'">';
+        template += '<div class = "created sub col-sm-3">'+time+'</div>';
+        template += '<div class="merchant sub col-sm-3">'+ merchant +'</div>';
+        template += '<div class="amount sub col-sm-3">'+ amount +'</div>';
+        template += '<div class="tags sub col-sm-3">&nbsp' +
+            '<button class="add-tag" onclick="addtag(this)">Add +</button></div>';
+        return template;
+    }
+            // add receipt to backend
+            function addReceipt(merchant, amount) {
+                var receipt = {"merchant":merchant,"amount":amount};
+                $.ajax({
+                    type: "POST",
+                    data :JSON.stringify(receipt),
+                    url: "/receipts",
+                    contentType: "application/json"
+                }).done(function (data) {
+                    $.getJSON("/receipts", function(receipts){
+                        var receipt = receipts[receipts.length-1];
+                        var template = createContent(receipt);
+                        $(template).appendTo($("#receiptList"));
+                        //for (var i = 0; i < receipts.length; i++) {
+                            //appendReceipt(receipts[receipts.length-1]);
+                    })
+                });
+            }
+            // add click interaction
+            $("#add-receipt").click(function(){
+                //$("#add-receipt-container").show();
+            });
+            // cancel button interaction as requested
+            $ ("#cancel-receipt").click(function(){
+                //$("#merchant").val("");
+                //$("#amount").val("");
+                //$("#add-receipt-container").hide();
+            });
+            // save button interaction
+            $('#save-receipt').click(function(){
+                var theMerchant = $("#merchant").val();
+                var theAmount = $("#amount").val();
+                addReceipt(theMerchant, theAmount);
+                //addReceipt($("#merchant").val(), $("#amount").val());
+                $ ("#merchant").val('');
+                $ ("#amount").val('');
+            });
+
+        </script>
+    </head>
+
+    <body>
+        <DIV id="container">
+                <h1>Receipts by hb364</h1>
+                <div id="add-receipt">add</div>
+                <div id="add-receipt-container">
+                    <input type="text" id="merchant" placeholder="merchant" />
+                    <input type="text" id="amount" placeholder="amount" />
+                    <button id="save-receipt">Save</button>
+                    <button id="cancel-receipt">Cancel</button>
+                </div>
+
+                <div id="receiptList">
+                    <div id="headers">
+                        <div class = "hTime">Time</div>
+                        <div class = "hMercant">Merchant</div>
+                        <div class = "hAmount">Amount</div>
+                        <div class = "htags">Tags</div>
+                    </div>
+                </div>
+        </DIV>
+    </body>
+</html>
