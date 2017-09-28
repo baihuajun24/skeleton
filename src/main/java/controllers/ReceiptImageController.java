@@ -55,11 +55,14 @@ public class ReceiptImageController {
                 int thisY = bp.getVertices(0).getY();
                 if (thisY > maxy){
                     maxy = thisY;
-                    merchantName = annotation.getDescription();
+                    String amountS = annotation.getDescription();
+                    // need to make sure BigDecimal format
+                    amount = new BigDecimal("0.0");
                 }
                 if (thisY < miny){
                     miny = thisY;
-                    amount = new BigDecimal(annotation.getDescription());
+                    merchantName = annotation.getDescription();
+
                 }
 
             }

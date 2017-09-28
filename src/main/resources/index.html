@@ -20,7 +20,32 @@
                 <div>Tags</div>
         </div>
         </div>
-    </body>
+        <button id="start">Start Video</button>
+        <button id="snapshot" disabled="true">Take a Snapshot!</button>
+        <br>
+        <div id="vidwrap">
+            <video autoplay></video>
+        </div>
+      </body>
+    <style>
+        body {
+            text-align: center;
+        }
+
+        video {
+            width: 400px;
+            height: 300px;
+            border: 1px solid black;
+        }
+
+        #vidwrap {
+            margin: 20px 0;
+        }
+
+        #start, #snapshot {
+            height: 3em;
+        }
+    </style>
     <script>
     const api = ""
     function createContent(receipt) {
@@ -47,6 +72,24 @@
         });
     }
 
+    $.getJSON(api+"/receipts", function(receipts){
+                for(var i=0; i < receipts.length; i++) {
+                    var receipt = receipts[i];
+                    var receiptIndElement = $("#receiptList");
+                    receiptIndElement.append(`<div class="receipt">
+                            <div class="created">${receipt.created}</div>
+                            <div class="merchant">${receipt.merchantName}</div>
+                            <div class="amount">${receipt.value}</div>
+                            <div class="tags" id=${receipt.receipt_type}></div>
+                            </div>`);
+                    /*for (var j=0; j < receipt.tags.length; j++) {
+                        var receiptTag = receipt.tags[j];
+                        var receiptTagElement = $('#' + receipt.id);
+                        receiptTagElement.append(`<span class='tag'><p class="tagValue">${receiptTag}</p></span>`)
+                    }*/
+                }
+      });
+
     $("#add-receipt").click(function(){
         //$("myDropdown").toggle();
     });
@@ -68,6 +111,7 @@
             }else{
                 receipt.children("input").remove();
             }
+            // TODO: add tag to database
     }
 
     function removetag(here){
@@ -84,99 +128,76 @@
                 $("#" + receiptId).children(".tags").append(tmp);
             }
         });
+    let imageCapture;
 
-    </script>
+    function attachMediaStream(mediaStream) {
+                $('video')[0].srcObject = mediaStream;
 
+                // Saving the track allows us to capture a photo
+                const track = mediaStream.getVideoTracks()[0];
+                imageCapture = new ImageCapture(track);
+            }
 
-</html>
-<head>
-    <script data-require="jquery@*" data-semver="3.1.1" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <style>
-        body {
-            text-align: center;
-        }
-
-        video {
-            width: 400px;
-            height: 300px;
-            border: 1px solid black;
-        }
-
-        #vidwrap {
-            margin: 20px 0;
-        }
-
-        #start, #snapshot {
-            height: 3em;
-        }
-    </style>
-    <script>
-        let imageCapture;
-
-        function attachMediaStream(mediaStream) {
-            $('video')[0].srcObject = mediaStream;
-
-            // Saving the track allows us to capture a photo
-            const track = mediaStream.getVideoTracks()[0];
-            imageCapture = new ImageCapture(track);
-        }
-
-        function startVideo() {
-            navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
-                .then(attachMediaStream)
-                .catch(error => {
-                    navigator.mediaDevices.getUserMedia({video: true})
-                        .then(attachMediaStream)
-                        .catch(error => {
-                            console.log('catch error in startVideo()');
-                        })
-                })
-        }
-
-        function takeSnapshot() {
-            // create a CANVAS element that is same size as the image
-            imageCapture.takePhoto()
-                .then(blob => createImageBitmap(blob))
-                .then(img => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-
-                    canvas.getContext('2d').drawImage(img, 0, 0);
-                    const base64EncodedImageData = canvas.toDataURL('image/png').split(',')[1];
-                    $.ajax({
-                        url: "/images",
-                        type: "POST",
-                        data: base64EncodedImageData,
-                        contentType: "text/plain",
-                        success: function() {},
-                   })
-                    .then(response => {
-                        $('video').after(`<div>got response: <pre>${JSON.stringify(response)}</pre></div>`);
+    function startVideo() {
+                navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
+                    .then(attachMediaStream)
+                    .catch(error => {
+                        console.log('catch eror in getUserMedia');
+                        navigator.mediaDevices.getUserMedia({video: true})
+                            .then(attachMediaStream)
+                            .catch(error => {
+                                console.log('catch error in startVideo()');
+                            })
                     })
-                    .always(() => console.log('request complete'));
+            }
 
-                    // For debugging, you can uncomment this to see the frame that was captured
-                    $('BODY').append(canvas);
-                });
+    function takeSnapshot() {
+                // create a CANVAS element that is same size as the image
+                //navigator.mediaDevices.getUserMedia({video: true})
+                    //.then(attachMediaStream);
+                imageCapture.grabFrame()
+                    //.then(blob => createImageBitmap(blob))
+                    .then(img => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
 
-        }
+                        canvas.getContext('2d').drawImage(img, 0, 0);
+                        const base64EncodedImageData = canvas.toDataURL('image/png').split(',')[1];
+                        $.ajax({
+                            url: "/images",
+                            type: "POST",
+                            data: base64EncodedImageData,
+                            contentType: "text/plain",
+                            success: function() {},
+                       })
+                        .then(response => {
+                            $('video').after(`<div>got response: <pre>${JSON.stringify(response)}</pre></div>`);
+                            // {"merchantName":null,"amount":null}
+                            // res[0] = {"merchantName", res[1] = null,"amount", res[2] = null}
+                            var res = JSON.stringify(response).split(":");
+                            var mName = res[1].split(",");
+                            //console.log(mName);
+                            //console.log(res[2]);
+                            var suggMerchant = document.getElementById("merchant");
+                            var suggAmount = document.getElementById("amount");
+                            suggMerchant.placeholder = mName[0];
+                            suggAmount.placeholder = res[2].substring(0, res[2].length-1);
+                        })
+                        .always(() => console.log('request complete'));
 
-        $(function () {
-            $('#start').on('click', startVideo);
-            $('video').on('play', () => $('#snapshot').prop('disabled', false));
-            $('#snapshot').on('click', takeSnapshot);
-        });
+                        // For debugging, you can uncomment this to see the frame that was captured
+                        $('BODY').append(canvas);
+                    });
+            }
+
+      $(function () {
+                $('#start').on('click', startVideo);
+                $('video').on('play', () => $('#snapshot').prop('disabled', false));
+                $('#snapshot').on('click', takeSnapshot);
+            });
+      // suggest input for user
+      // <input id="merchant" placeholder="Merchant"></input>
+      // <input id="amount" placeholder="Amount"></input>
     </script>
-</head>
-
-<body>
-<button id="start">Start Video</button>
-<button id="snapshot" disabled="true">Take a Snapshot!</button>
-<br>
-<div id="vidwrap">
-    <video autoplay></video>
-    </div>
-</body>
-
 </html>
