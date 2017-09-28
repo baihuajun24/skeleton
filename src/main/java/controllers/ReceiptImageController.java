@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import org.hibernate.validator.constraints.NotEmpty;
 import java.*;
 import static java.lang.System.out;
+import java.util.ArrayList;
 
 @Path("/images")
 @Consumes(MediaType.TEXT_PLAIN)
@@ -31,10 +32,6 @@ public class ReceiptImageController {
      *
      * YOU SHOULD MODIFY THIS METHOD TO RETURN A ReceiptSuggestionResponse:
      **/
-     public class ReceiptSuggestionResponse {
-          String merchantName;
-          String amount;
-     }
     @POST
     public ReceiptSuggestionResponse parseReceipt(@NotEmpty String base64EncodedImage) throws Exception {
         Image img = Image.newBuilder().setContent(ByteString.copyFrom(Base64.getDecoder().decode(base64EncodedImage))).build();
@@ -50,21 +47,19 @@ public class ReceiptImageController {
             // Your Algo Here!!
             // Sort text annotations by bounding polygon.  Top-most non-decimal text is the merchant
             // bottom-most decimal text is the total amount
-            
+
             int maxy = -1;
-            int miny = 100000; 
+            int miny = 100000;
             for (EntityAnnotation annotation : res.getTextAnnotationsList()) {
                 BoundingPoly bp = annotation.getBoundingPoly();
-                ArrayList<Vertex> vList = bp.getVertices();
-                int thisY = vList[0].getY();
+                int thisY = bp.getVertices(0).getY();
                 if (thisY > maxy){
                     maxy = thisY;
                     merchantName = annotation.getDescription();
-
                 }
                 if (thisY < miny){
                     miny = thisY;
-                    amount = new BigDecimal(annotation.getDescription().replaceAll(',', ''));
+                    amount = new BigDecimal(annotation.getDescription());
                 }
 
             }

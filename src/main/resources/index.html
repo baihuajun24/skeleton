@@ -1,12 +1,9 @@
 <html>
-
-<<<<<<< HEAD
     <head>
         <script data-require="jquery@*" data-semver="3.1.1" type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
         <title>hb364A3</title>
     </head>
     <body>
-        <h1> F-word CSS</h1>
         <div id="container" style="width:40%; margin: auto">
         <div class='title'>My receipts</div>
         <div id="add-receipt">add</div>
@@ -92,7 +89,6 @@
 
 
 </html>
-=======
 <head>
     <script data-require="jquery@*" data-semver="3.1.1" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <style>
@@ -132,7 +128,7 @@
                     navigator.mediaDevices.getUserMedia({video: true})
                         .then(attachMediaStream)
                         .catch(error => {
-                            console.log('you are fooked');
+                            console.log('catch error in startVideo()');
                         })
                 })
         }
@@ -161,7 +157,7 @@
                     .always(() => console.log('request complete'));
 
                     // For debugging, you can uncomment this to see the frame that was captured
-                    // $('BODY').append(canvas);
+                    $('BODY').append(canvas);
                 });
 
         }
@@ -184,4 +180,3 @@
 </body>
 
 </html>
->>>>>>> 28354a1e7dd68f33469627e584ad0e4eed1ae8d4
