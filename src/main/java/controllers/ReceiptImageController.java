@@ -42,7 +42,8 @@ public class ReceiptImageController {
             AnnotateImageResponse res = responses.getResponses(0);
 
             String merchantName = null;
-            BigDecimal amount = null;
+            //BigDecimal amount = null;
+            BigDecimal amount = new BigDecimal("0.0");
 
             // Your Algo Here!!
             // Sort text annotations by bounding polygon.  Top-most non-decimal text is the merchant
@@ -50,23 +51,33 @@ public class ReceiptImageController {
 
             int maxy = -1;
             int miny = 100000;
+            String amountString = "";
             for (EntityAnnotation annotation : res.getTextAnnotationsList()) {
                 BoundingPoly bp = annotation.getBoundingPoly();
                 int thisY = bp.getVertices(0).getY();
+                String topLine = annotation.getDescription();
                 if (thisY > maxy){
                     maxy = thisY;
-                    String amountS = annotation.getDescription();
-                    // need to make sure BigDecimal format
-                    amount = new BigDecimal("0.0");
+                    amountString = topLine;
                 }
                 if (thisY < miny){
                     miny = thisY;
-                    merchantName = annotation.getDescription();
-
+                    merchantName = topLine.split("[\n\r\t]")[0];
                 }
-
             }
-
+            System.out.println(amountString);
+            for (String ele : amountString.split(" ")) {
+                if (ele.matches("$?[0-9]*(\\.[0-9]{2})?")) {
+                    System.out.println(ele);
+                    if (ele.charAt(0) == '$') {
+                        amount = new BigDecimal(ele.substring(1));
+                    }
+                    else {
+                        amount = new BigDecimal(ele);
+                    }
+                    break;
+                }
+            }
 
             //TextAnnotation fullTextAnnotation = res.getFullTextAnnotation();
             return new ReceiptSuggestionResponse(merchantName, amount);

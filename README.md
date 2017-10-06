@@ -16,3 +16,4 @@ To build and run with docker:
 2. suggest merchantName and amount to inbox
 3. destory video DOM element?
 4. add tag to database from last time
+5. choose merchant name as first string
