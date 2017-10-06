@@ -48,6 +48,7 @@
     </style>
     <script>
     const api = ""
+    $(refresh());
     function createContent(receipt) {
         var template = '<div class="receipt" id="'+receipt.id+'">';
         template += '<div class = "created">'+receipt.created+'</div>';
@@ -71,24 +72,31 @@
             })
         });
     }
-
-    $.getJSON(api+"/receipts", function(receipts){
-                for(var i=0; i < receipts.length; i++) {
-                    var receipt = receipts[i];
-                    var receiptIndElement = $("#receiptList");
-                    receiptIndElement.append(`<div class="receipt">
-                            <div class="created">${receipt.created}</div>
-                            <div class="merchant">${receipt.merchantName}</div>
-                            <div class="amount">${receipt.value}</div>
-                            <div class="tags" id=${receipt.receipt_type}></div>
-                            </div>`);
-                    /*for (var j=0; j < receipt.tags.length; j++) {
-                        var receiptTag = receipt.tags[j];
-                        var receiptTagElement = $('#' + receipt.id);
-                        receiptTagElement.append(`<span class='tag'><p class="tagValue">${receiptTag}</p></span>`)
-                    }*/
-                }
-      });
+    function refresh(){
+    		console.log("refreshed");
+		    $.getJSON(api+"/receipts", function(receipts){
+		    	$.getJSON(api+"/tags", function(tags){
+		    			console.log("test");
+		                /*for(var i=0; i < receipts.length; i++) {
+		                	var receipt = receipts[i];
+		                	var tagsElements = '';
+		                	for (var j=0; j < tags.length; j++){
+		                		if (tags[j].receipt_id == receipt.id){
+		                			tagsElements += '<span class="tagValue" onclick="removeTag">' + tags[j].label + '</span>'
+		                		}
+		                	}
+		                    var receiptIndElement = $("#receiptList");
+		                    receiptIndElement.append(`<div class="receipt">
+		                            <div class="created">${receipt.created}</div>
+		                            <div class="merchant">${receipt.merchantName}</div>
+		                            <div class="amount">${receipt.value}</div>
+		                            <div class="tags"> ${tagsElements}
+            						<button class="add-tag" onclick="addtag(`+ receipt.id+`)">Add +</button></div>
+		                            </div>`);
+		                }*/
+		        });
+		      });
+	}
 
     $("#add-receipt").click(function(){
         //$("myDropdown").toggle();
@@ -112,6 +120,22 @@
                 receipt.children("input").remove();
             }
             // TODO: add tag to database
+            /*$('.tag_input').keypress(function (event){
+	            if (event.keyCode == 13){
+	            	var tag = $(this).val();
+	                $.ajax({
+	            			type: "PUT",
+	            			data :JSON.stringify(receipt.attr("id")), //
+	            			url: api + "/tags/" + tag, 
+	            			contentType: "application/json",
+	        		}).done(function (data){
+	                		console.log("tag added");
+	                		$(this).remove();
+	        		});
+
+	            }
+        	});*/
+
     }
 
     function removetag(here){
@@ -122,12 +146,28 @@
     $(document).on("keypress", ".tag_input", function(key){
             if(key.which == 13) {
                 // need ajax stuff
-                var receiptId = parseInt($(this).parent().attr("id"));
+                var receipt = $(this).parent();
+                var receiptId = parseInt(receipt.attr("id"));
                 var tag = $(this).val().trim();
+                var tagData = {"label":tag, "receipt_id":receiptId};
                 var tmp = "<div class='tag tagValue' onclick= 'removetag(this)'>" + tag + "</div>";
                 $("#" + receiptId).children(".tags").append(tmp);
+
+                $.ajax({
+            			type: "PUT",
+            			data :JSON.stringify(tagData), //
+            			url: api + "/tags/" + tag, 
+            			contentType: "application/json",
+        		}).done(function (data){
+                		console.log("tag added");
+                		$(key.target).remove(); // key.target is the input box
+                		//$(receipt).getElementByClassName("add-tag").remove();
+                		//$(receipt).children("tags").remove();
+                		//refresh();
+        		});
             }
-        });
+
+    });
     let imageCapture;
 
     function attachMediaStream(mediaStream) {
